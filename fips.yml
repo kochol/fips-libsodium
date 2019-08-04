@@ -1,0 +1,10 @@
+#
+# sodium
+#
+---
+        
+exports:
+    header-dirs :
+        - src/libsodium/include
+    modules :
+        sodium   :          .

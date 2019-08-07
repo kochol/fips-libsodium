@@ -427,13 +427,6 @@ MESSAGE("                                                           ")
 ##################### SOURCE / HEADERS ####################
 #----------------------------------------------------------
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include)
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/src/libsodium/include/sodium)
-#For version.h.in to version.h
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR}/src/libsodium/include/sodium)
-
 SET(libsodium_HEADERS ${libsodium_HEADERS}
     src/libsodium/include/sodium.h 
 	src/libsodium/include/sodium/core.h 
@@ -671,29 +664,38 @@ IF(ENABLE_BLOCKING_RANDOM)
     ADD_DEFINITIONS("-DUSE_BLOCKING_RANDOM")
 ENDIF(ENABLE_BLOCKING_RANDOM)
 
-# include the fips main cmake file
-get_filename_component(FIPS_ROOT_DIR "../fips" ABSOLUTE)
-include("${FIPS_ROOT_DIR}/cmake/fips.cmake")
+if (NOT FIPS_IMPORT)
+    # include the fips main cmake file
+    get_filename_component(FIPS_ROOT_DIR "../fips" ABSOLUTE)
+    include("${FIPS_ROOT_DIR}/cmake/fips.cmake")
 
-fips_setup(PROJECT sodium)
-	fips_include_directories(src/libsodium/include)
+    fips_setup(PROJECT sodium)
+endif()
 
-    IF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
-        fips_begin_sharedlib(sodium)
-            fips_files(                
-                ${libsodium_HEADERS} ${libsodium_SOURCE}
-            )
-        fips_end_sharedlib(sodium)
-    ELSE(LIBSODIUM_BUILD_SHARED_LIBRARIES)
-        ADD_DEFINITIONS("-DSODIUM_STATIC")
-        fips_begin_lib(sodium)
-            fips_files(
-                ${libsodium_HEADERS} ${libsodium_SOURCE}
-            )
-        fips_end_lib(sodium)
-    ENDIF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+
+fips_include_directories(src)
+fips_include_directories(src/libsodium)
+fips_include_directories(src/libsodium/include)
+fips_include_directories(src/libsodium/include/sodium)
+
+IF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+    fips_begin_sharedlib(sodium)
+        fips_files(                
+            ${libsodium_HEADERS} ${libsodium_SOURCE}
+        )
+    fips_end_sharedlib(sodium)
+ELSE(LIBSODIUM_BUILD_SHARED_LIBRARIES)
+    ADD_DEFINITIONS("-DSODIUM_STATIC")
+    fips_begin_lib(sodium)
+        fips_files(
+            ${libsodium_HEADERS} ${libsodium_SOURCE}
+        )
+    fips_end_lib(sodium)
+ENDIF(LIBSODIUM_BUILD_SHARED_LIBRARIES)
     
-fips_finish()
+if (NOT FIPS_IMPORT)
+    fips_finish()
+endif()
 
 if(NOT DISABLE_CPM)
   # CPM stuff

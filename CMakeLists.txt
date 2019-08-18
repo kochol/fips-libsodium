@@ -109,46 +109,46 @@ IF(EMSCRIPTEN)
 ENDIF()
 
 
-IF(MSYS OR MINGW OR CYGWIN)
+IF(FIPS_MSVC OR MINGW OR CYGWIN)
     SET(DISABLE_PIE ON)
 ENDIF()
 
-
 #TI mode check
-IF(${IS_BIGENDIAN})
-    TRY_COMPILE(HAVE_TI_MODE_COMPILE ${CMAKE_CURRENT_BINARY_DIR}/build ${CMAKE_CURRENT_SOURCE_DIR}/test/HAVE_TI_MODE.c COMPILE_DEFINITIONS -DNATIVE_BIG_ENDIAN=1)
-ELSE(${IS_BIGENDIAN})
-    TRY_COMPILE(HAVE_TI_MODE_COMPILE ${CMAKE_CURRENT_BINARY_DIR}/build ${CMAKE_CURRENT_SOURCE_DIR}/test/HAVE_TI_MODE.c COMPILE_DEFINITIONS -DNATIVE_LITTLE_ENDIAN=1)
-ENDIF(${IS_BIGENDIAN})
+IF (NOT FIPS_MSVC)
+	IF(${IS_BIGENDIAN})
+		TRY_COMPILE(HAVE_TI_MODE_COMPILE ${CMAKE_CURRENT_BINARY_DIR}/build ${CMAKE_CURRENT_SOURCE_DIR}/test/HAVE_TI_MODE.c COMPILE_DEFINITIONS -DNATIVE_BIG_ENDIAN=1)
+	ELSE(${IS_BIGENDIAN})
+		TRY_COMPILE(HAVE_TI_MODE_COMPILE ${CMAKE_CURRENT_BINARY_DIR}/build ${CMAKE_CURRENT_SOURCE_DIR}/test/HAVE_TI_MODE.c COMPILE_DEFINITIONS -DNATIVE_LITTLE_ENDIAN=1)
+	ENDIF(${IS_BIGENDIAN})
 
-IF(HAVE_TI_MODE_COMPILE)
+	IF(HAVE_TI_MODE_COMPILE)
 
-    SET(libsodium_HEADERS ${libsodium_HEADERS}
-        src/libsodium/crypto_core/ed25519/ref10/fe_51/base.h 
-        src/libsodium/crypto_core/ed25519/ref10/fe_51/base2.h
-        src/libsodium/crypto_core/ed25519/ref10/fe_51/constants.h
-        src/libsodium/crypto_core/ed25519/ref10/fe_51/fe.h
-        src/libsodium/include/sodium/private/ed25519_ref10_fe_51.h
-    )
+		SET(libsodium_HEADERS ${libsodium_HEADERS}
+			src/libsodium/crypto_core/ed25519/ref10/fe_51/base.h 
+			src/libsodium/crypto_core/ed25519/ref10/fe_51/base2.h
+			src/libsodium/crypto_core/ed25519/ref10/fe_51/constants.h
+			src/libsodium/crypto_core/ed25519/ref10/fe_51/fe.h
+			src/libsodium/include/sodium/private/ed25519_ref10_fe_51.h
+		)
 
-    ADD_DEFINITIONS(-DHAVE_TI_MODE)
+		ADD_DEFINITIONS(-DHAVE_TI_MODE)
 
-    MESSAGE("Gcc TI Mode is available.")
+		MESSAGE("Gcc TI Mode is available.")
 
-ELSE(HAVE_TI_MODE_COMPILE)
+	ELSE(HAVE_TI_MODE_COMPILE)
 
-    SET(libsodium_HEADERS ${libsodium_HEADERS}
-        src/libsodium/crypto_core/ed25519/ref10/fe_25_5/base.h 
-        src/libsodium/crypto_core/ed25519/ref10/fe_25_5/base2.h 
-        src/libsodium/crypto_core/ed25519/ref10/fe_25_5/constants.h 
-        src/libsodium/crypto_core/ed25519/ref10/fe_25_5/fe.h 
-        src/libsodium/include/sodium/private/ed25519_ref10_fe_25_5.h
-    )
+		SET(libsodium_HEADERS ${libsodium_HEADERS}
+			src/libsodium/crypto_core/ed25519/ref10/fe_25_5/base.h 
+			src/libsodium/crypto_core/ed25519/ref10/fe_25_5/base2.h 
+			src/libsodium/crypto_core/ed25519/ref10/fe_25_5/constants.h 
+			src/libsodium/crypto_core/ed25519/ref10/fe_25_5/fe.h 
+			src/libsodium/include/sodium/private/ed25519_ref10_fe_25_5.h
+		)
 
-    MESSAGE("Gcc TI Mode is not available.")
+		MESSAGE("Gcc TI Mode is not available.")
 
-ENDIF(HAVE_TI_MODE_COMPILE)
-
+	ENDIF(HAVE_TI_MODE_COMPILE)
+endif()
 
 #Check if weak symbols are supported.
 TRY_COMPILE(HAVE_WEAK_SYMBOLS_COMPILE ${CMAKE_CURRENT_BINARY_DIR}/build ${CMAKE_CURRENT_SOURCE_DIR}/test/HAVE_WEAK_SYMBOLS.c)
@@ -303,13 +303,13 @@ IF("${CMAKE_C_COMPILER_ID}" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
     CHECK_COMPILER_FLAG(Wno-unknown-warning-option)
 ENDIF()
 
-IF(NOT (MSYS OR MINGW OR CYGWIN))
+IF(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
     #Check if -fPIC is available.
     CHECK_COMPILER_FLAG(fPIC)
-ELSE(NOT (MSYS OR MINGW OR CYGWIN))
+ELSE(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
     CHECK_COMPILER_FLAG(Wl,--dynamicbase)
     CHECK_COMPILER_FLAG(Wl,--nxcompat)
-ENDIF(NOT (MSYS OR MINGW OR CYGWIN))
+ENDIF(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
 
 #Check if -fPIE is available.
 IF(NOT DISABLE_PIE)
@@ -317,7 +317,7 @@ IF(NOT DISABLE_PIE)
 ENDIF(NOT DISABLE_PIE)
 
 #Check if -Wall is available.
-CHECK_COMPILER_FLAG(Wall)
+#CHECK_COMPILER_FLAG(Wall)
 
 #Check if -Wextra is available.
 CHECK_COMPILER_FLAG(Wextra)
@@ -672,7 +672,8 @@ if (NOT FIPS_IMPORT)
     fips_setup(PROJECT sodium)
 endif()
 
-
+fips_vs_warning_level(3)
+ 
 fips_include_directories(src)
 fips_include_directories(src/libsodium)
 fips_include_directories(src/libsodium/include)

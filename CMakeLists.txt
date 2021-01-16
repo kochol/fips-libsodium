@@ -298,126 +298,127 @@ CHECK_COMPILER_FLAG(std=c99)
 #Check if -D_FORTIFY_SOURCE=2 is available.
 CHECK_COMPILER_FLAG(D_FORTIFY_SOURCE=2)
 
-#Check if clang and if -Wno-unknown-warning-option is available.
-IF("${CMAKE_C_COMPILER_ID}" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    CHECK_COMPILER_FLAG(Wno-unknown-warning-option)
+IF (NOT FIPS_MSVC)
+    #Check if clang and if -Wno-unknown-warning-option is available.
+    IF("${CMAKE_C_COMPILER_ID}" OR "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+        CHECK_COMPILER_FLAG(Wno-unknown-warning-option)
+    ENDIF()
+
+    IF(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
+        #Check if -fPIC is available.
+        CHECK_COMPILER_FLAG(fPIC)
+    ELSE(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
+        CHECK_COMPILER_FLAG(Wl,--dynamicbase)
+        CHECK_COMPILER_FLAG(Wl,--nxcompat)
+    ENDIF(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
+
+    #Check if -fPIE is available.
+    IF(NOT DISABLE_PIE)
+        CHECK_COMPILER_FLAG(fPIE)
+    ENDIF(NOT DISABLE_PIE)
+
+    #Check if -Wall is available.
+    #CHECK_COMPILER_FLAG(Wall)
+
+    #Check if -Wextra is available.
+    CHECK_COMPILER_FLAG(Wextra)
+
+    #Check if -fvisibility=hidden is available
+    CHECK_COMPILER_FLAG(fvisibility=hidden)
+
+    #Check if -fno-strict-aliasing is available.
+    CHECK_COMPILER_FLAG(fno-strict-aliasing)
+
+    #Check if -fno-strict-overflow is available.
+    CHECK_COMPILER_FLAG(fno-strict-overflow)
+    IF(NOT IS_fno-strict-overflow_AVAILABLE)
+        #If -fno-strict-overflow is not available, try with -fwrapv.
+        CHECK_COMPILER_FLAG(fwrapv)
+    ENDIF()
+
+    IF(NOT DISABLE_SSP)
+        #Check if -fstack-protector is available.
+        CHECK_COMPILER_FLAG(fstack-protector)
+    ENDIF(NOT DISABLE_SSP)
+
+    #Check if -Winit-self is available.
+    CHECK_COMPILER_FLAG(Winit-self)
+
+    #Check if -Wwrite-strings is available.
+    CHECK_COMPILER_FLAG(Wwrite-strings)
+
+    #Check if -Wdiv-by-zero is available.
+    CHECK_COMPILER_FLAG(Wdiv-by-zero)
+
+    #Check if -Wsometimes-uninitialized is available.
+    CHECK_COMPILER_FLAG(Wsometimes-uninitialized)
+
+    #Check if -Wbad-function-cast is available.
+    CHECK_COMPILER_FLAG(Wbad-function-cast)
+
+    #Check if -Wcast-align is available.
+    CHECK_COMPILER_FLAG(Wcast-align)
+
+    #Check if -Wcast-qual is available.
+    CHECK_COMPILER_FLAG(Wcast-qual)
+
+    #Check if -Wchar-subscripts is available.
+    CHECK_COMPILER_FLAG(Wchar-subscripts)
+
+    #Check if -Wcomment is available.
+    CHECK_COMPILER_FLAG(Wcomment)
+
+    #Check if -Wfloat-equal is available.
+    CHECK_COMPILER_FLAG(Wfloat-equal)
+
+    #Check if -Wformat=2 is available.
+    CHECK_COMPILER_FLAG(Wformat=2)
+
+    #Check if -Wimplicit is available.
+    CHECK_COMPILER_FLAG(Wimplicit)
+
+    #Check if -Wmissing-declarations is available.
+    CHECK_COMPILER_FLAG(Wmissing-declarations)
+
+    #Check if -Wmissing-prototypes is available.
+    CHECK_COMPILER_FLAG(Wmissing-prototypes)
+
+    #Check if -Wnormalized=id is available.
+    CHECK_COMPILER_FLAG(Wnormalized=id)
+
+    #Check if -Woverride-init is available.
+    CHECK_COMPILER_FLAG(Woverride-init)
+
+    #Check if -Wparentheses is available.
+    CHECK_COMPILER_FLAG(Wparentheses)
+
+    #Check if -Wpointer-arith is available.
+    CHECK_COMPILER_FLAG(Wpointer-arith)
+
+    #Check if -Wredundant-decls is available.
+    CHECK_COMPILER_FLAG(Wredundant-decls)
+
+    #Check if -Wstrict-prototypes is available.
+    CHECK_COMPILER_FLAG(Wstrict-prototypes)
+
+    #Check if -Wswitch-enum is available.
+    CHECK_COMPILER_FLAG(Wswitch-enum)
+
+    #Check if -Wvariable-dec is available.
+    CHECK_COMPILER_FLAG(Wvariable-decl)
+
+    #Check if -Wl,-z,relro is available.
+    CHECK_COMPILER_FLAG(Wl,-z,relro)
+
+    #Check if -Wl,-z,now is available.
+    CHECK_COMPILER_FLAG(Wl,-z,now)
+
+    #Check if -Wl,-z,noexecstack is available.
+    CHECK_COMPILER_FLAG(Wl,-z,noexecstack)
+
+    #Check if -Wl,--verbose is available and enable it.
+    #CHECK_COMPILER_FLAG(Wl,--verbose)
 ENDIF()
-
-IF(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
-    #Check if -fPIC is available.
-    CHECK_COMPILER_FLAG(fPIC)
-ELSE(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
-    CHECK_COMPILER_FLAG(Wl,--dynamicbase)
-    CHECK_COMPILER_FLAG(Wl,--nxcompat)
-ENDIF(NOT (FIPS_MSVC OR MINGW OR CYGWIN))
-
-#Check if -fPIE is available.
-IF(NOT DISABLE_PIE)
-    CHECK_COMPILER_FLAG(fPIE)
-ENDIF(NOT DISABLE_PIE)
-
-#Check if -Wall is available.
-#CHECK_COMPILER_FLAG(Wall)
-
-#Check if -Wextra is available.
-CHECK_COMPILER_FLAG(Wextra)
-
-#Check if -fvisibility=hidden is available
-CHECK_COMPILER_FLAG(fvisibility=hidden)
-
-#Check if -fno-strict-aliasing is available.
-CHECK_COMPILER_FLAG(fno-strict-aliasing)
-
-#Check if -fno-strict-overflow is available.
-CHECK_COMPILER_FLAG(fno-strict-overflow)
-IF(NOT IS_fno-strict-overflow_AVAILABLE)
-    #If -fno-strict-overflow is not available, try with -fwrapv.
-    CHECK_COMPILER_FLAG(fwrapv)
-ENDIF()
-
-IF(NOT DISABLE_SSP)
-    #Check if -fstack-protector is available.
-    CHECK_COMPILER_FLAG(fstack-protector)
-ENDIF(NOT DISABLE_SSP)
-
-#Check if -Winit-self is available.
-CHECK_COMPILER_FLAG(Winit-self)
-
-#Check if -Wwrite-strings is available.
-CHECK_COMPILER_FLAG(Wwrite-strings)
-
-#Check if -Wdiv-by-zero is available.
-CHECK_COMPILER_FLAG(Wdiv-by-zero)
-
-#Check if -Wsometimes-uninitialized is available.
-CHECK_COMPILER_FLAG(Wsometimes-uninitialized)
-
-#Check if -Wbad-function-cast is available.
-CHECK_COMPILER_FLAG(Wbad-function-cast)
-
-#Check if -Wcast-align is available.
-CHECK_COMPILER_FLAG(Wcast-align)
-
-#Check if -Wcast-qual is available.
-CHECK_COMPILER_FLAG(Wcast-qual)
-
-#Check if -Wchar-subscripts is available.
-CHECK_COMPILER_FLAG(Wchar-subscripts)
-
-#Check if -Wcomment is available.
-CHECK_COMPILER_FLAG(Wcomment)
-
-#Check if -Wfloat-equal is available.
-CHECK_COMPILER_FLAG(Wfloat-equal)
-
-#Check if -Wformat=2 is available.
-CHECK_COMPILER_FLAG(Wformat=2)
-
-#Check if -Wimplicit is available.
-CHECK_COMPILER_FLAG(Wimplicit)
-
-#Check if -Wmissing-declarations is available.
-CHECK_COMPILER_FLAG(Wmissing-declarations)
-
-#Check if -Wmissing-prototypes is available.
-CHECK_COMPILER_FLAG(Wmissing-prototypes)
-
-#Check if -Wnormalized=id is available.
-CHECK_COMPILER_FLAG(Wnormalized=id)
-
-#Check if -Woverride-init is available.
-CHECK_COMPILER_FLAG(Woverride-init)
-
-#Check if -Wparentheses is available.
-CHECK_COMPILER_FLAG(Wparentheses)
-
-#Check if -Wpointer-arith is available.
-CHECK_COMPILER_FLAG(Wpointer-arith)
-
-#Check if -Wredundant-decls is available.
-CHECK_COMPILER_FLAG(Wredundant-decls)
-
-#Check if -Wstrict-prototypes is available.
-CHECK_COMPILER_FLAG(Wstrict-prototypes)
-
-#Check if -Wswitch-enum is available.
-CHECK_COMPILER_FLAG(Wswitch-enum)
-
-#Check if -Wvariable-dec is available.
-CHECK_COMPILER_FLAG(Wvariable-decl)
-
-#Check if -Wl,-z,relro is available.
-CHECK_COMPILER_FLAG(Wl,-z,relro)
-
-#Check if -Wl,-z,now is available.
-CHECK_COMPILER_FLAG(Wl,-z,now)
-
-#Check if -Wl,-z,noexecstack is available.
-CHECK_COMPILER_FLAG(Wl,-z,noexecstack)
-
-#Check if -Wl,--verbose is available and enable it.
-#CHECK_COMPILER_FLAG(Wl,--verbose)
-
 
 MESSAGE("------------- DONE WITH COMPILER FLAG CHECKS. -------------")
 MESSAGE("                                                           ")
